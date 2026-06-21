@@ -1,5 +1,7 @@
 # Fern
 
+> Built with [Cursor](https://cursor.com) for the Cursor Hackathon.
+
 **Privacy-first subscription auditor.** Find forgotten free trials and subscriptions by reading Gmail — not your bank account.
 
 10 of 14 subscription trackers (Rocket Money, Trim, Hiatus) require bank linking and expose your full transaction history. Fern reads only subscription-related emails and stays entirely local on your machine.
