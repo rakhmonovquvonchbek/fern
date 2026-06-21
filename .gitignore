@@ -1,0 +1,18 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# User data lives in ~/.fern/ (not in this repo)
+
+# Secrets & credentials
+.env
+credentials.json
+token.json
+
+# Generated output
+output/cache/
+output/drafts/
+output/report.md

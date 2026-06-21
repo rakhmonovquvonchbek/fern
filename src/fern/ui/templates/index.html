@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fern — Subscription Audit</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header>
+    <div class="header-top">
+      <div class="brand">
+        <h1>🌿 Fern</h1>
+        <p class="tagline">find and cancel forgotten subscriptions</p>
+        {% if data.generated %}<p class="date">Audit from {{ data.generated }}</p>{% endif %}
+      </div>
+      {% if has_report %}
+      <button id="rerun-btn" class="btn-rerun" onclick="rerunAudit()">Re-run audit</button>
+      {% endif %}
+    </div>
+    {% if has_report %}
+    <div class="stats">
+      <div class="stat"><div class="stat-label">Services found</div><div class="stat-value">{{ data.total_services }}</div></div>
+      <div class="stat"><div class="stat-label">Est. monthly</div><div class="stat-value">{{ data.monthly_spend or '—' }}</div></div>
+      <div class="stat"><div class="stat-label">Active trials</div><div class="stat-value">{{ data.active_trials }}</div></div>
+      <div class="stat"><div class="stat-label">Active subs</div><div class="stat-value">{{ data.active_subscriptions }}</div></div>
+    </div>
+    {% endif %}
+  </header>
+
+  <main>
+    {% if not has_report %}
+    <div class="empty">
+      <p>No audit report yet.</p>
+      <p style="margin-top:1rem">Run <code>fern audit</code> first, then refresh.</p>
+    </div>
+    {% else %}
+
+    <div class="about">
+      <strong>Privacy-first:</strong> 10 of 14 subscription trackers require bank account linking.
+      Fern never touches your bank — it reads only subscription-related Gmail and stays on your machine.
+      Works globally. Focused on free trials competitors miss.
+    </div>
+
+    {% set sections = [
+      ('trials', '⚠️ Trials expiring soon', false, 'trial'),
+      ('active', '💳 Active subscriptions', false, ''),
+      ('unclear', '❓ Unclear', true, 'unclear'),
+      ('cancelled', '✅ Already cancelled', true, 'cancelled')
+    ] %}
+
+    {% for key, title, collapsed, card_class in sections %}
+      {% set entries = data.sections.get(key, []) %}
+      <section>
+        <div class="section-header collapsible{% if collapsed %} collapsed{% endif %}"
+             data-collapsed="{{ 'true' if collapsed else 'false' }}"
+             onclick="toggleSection(this)">
+          <h2>{{ title }}</h2>
+          <span class="count">({{ entries|length }})</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="section-body{% if collapsed %} hidden{% endif %}">
+          {% if entries %}
+          <div class="cards">
+            {% for entry in entries %}
+            <article class="card {{ card_class }}">
+              <span class="badge {{ entry.status }}">{{ entry.status }}</span>
+              <h3>{{ entry.name }}</h3>
+              {% if entry.amount %}<p class="detail"><strong>Amount:</strong> {{ entry.amount }}</p>{% endif %}
+              {% if entry.end_date %}<p class="detail"><strong>End / renew:</strong> {{ entry.end_date }}</p>{% endif %}
+              {% if entry.start_date %}<p class="detail"><strong>Start:</strong> {{ entry.start_date }}</p>{% endif %}
+              {% if entry.cancel_url %}
+              <a class="cancel-link" href="{{ entry.cancel_url }}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Cancel here →</a>
+              {% endif %}
+              {% if entry.draft %}
+              <button class="draft-btn" onclick="event.stopPropagation(); toggleDraft(this)">View cancellation draft</button>
+              <div class="draft-body"><button class="copy-btn" onclick="event.stopPropagation(); copyDraft(this)">Copy</button>{{ entry.draft }}</div>
+              {% endif %}
+            </article>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="detail">None found.</p>
+          {% endif %}
+        </div>
+      </section>
+    {% endfor %}
+    {% endif %}
+  </main>
+
+  <footer>
+    <p>🔒 Your emails never leave your machine</p>
+    <p style="margin-top:0.35rem">Fern v0.2 — privacy-first subscription auditor · <a href="#">GitHub</a></p>
+  </footer>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
